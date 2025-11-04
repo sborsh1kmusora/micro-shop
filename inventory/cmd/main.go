@@ -18,6 +18,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/sborsh1kmusora/micro-shop/inventory/internal/interceptor"
 	inventoryV1 "github.com/sborsh1kmusora/micro-shop/shared/pkg/proto/inventory/v1"
 )
 
@@ -37,7 +38,9 @@ func main() {
 		return
 	}
 
-	s := grpc.NewServer()
+	s := grpc.NewServer(
+		grpc.UnaryInterceptor(interceptor.LoggerInterceptor()),
+	)
 
 	invService := &inventoryService{
 		items: make(map[string]*inventoryV1.Item),
@@ -63,7 +66,7 @@ func main() {
 
 	s.GracefulStop()
 
-	log.Println("Server stopped")
+	log.Println("Server gracefully stopped")
 }
 
 func (s *inventoryService) GetItem(
@@ -75,7 +78,7 @@ func (s *inventoryService) GetItem(
 
 	item, ok := s.items[req.GetUuid()]
 	if !ok {
-		return nil, status.Errorf(codes.NotFound, "sighting with UUID %s not found", req.GetUuid())
+		return nil, status.Errorf(codes.NotFound, "item with UUID %s not found", req.GetUuid())
 	}
 
 	return &inventoryV1.GetItemResponse{
