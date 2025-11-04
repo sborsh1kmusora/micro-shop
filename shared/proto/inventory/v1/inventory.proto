@@ -1,0 +1,113 @@
+syntax = "proto3";
+
+// Package inventory.v1 содержит API для работы с элементами заказа
+package inventory.v1;
+
+option go_package = "github.com/sborsh1kmusora/micro-shop/shared/pkg/proto/inventory/v1;inventory_v1";
+
+import "google/protobuf/timestamp.proto";
+
+// InventoryService предоставляет API для работы с элементами заказа
+service InventoryService {
+  // GetItem возвращает информацию о товаре
+  rpc GetItem (GetItemRequest) returns (GetItemResponse);
+
+  // ListItems возвращает список товаров с возможностью фильтрации
+  rpc ListItems (ListItemsRequest) returns (ListItemsResponse);
+
+  // AddItem добавляет новый товар
+  rpc AddItem (AddItemRequest) returns (AddItemResponse);
+}
+
+// GetItemRequest запрос на получение информации о товаре
+message GetItemRequest {
+  // uuid идентификатор товара
+  string uuid = 1;
+}
+
+// GetItemResponse ответ на запрос получения информации о товаре
+message GetItemResponse {
+  // item информация о товаре
+  Item item = 1;
+}
+
+// ListItemsRequest запрос на получение списка товаров
+message ListItemsRequest {
+  // filter фильтр по товарам
+  ItemsFilter filter = 1;
+}
+
+// ListItemsResponse ответ со списком товаров с применением фильтра
+message ListItemsResponse {
+  // items список товаров
+  repeated Item items = 1;
+}
+
+// AddItemRequest запрос на добавление нового товара
+message AddItemRequest {
+  Item item = 1;
+}
+
+// AddItemResponse ответ с uuid товара
+message AddItemResponse {
+  string uuid = 1;
+}
+
+// ItemsFilter фильтр для получения товаров
+message ItemsFilter {
+  repeated string uuids = 1;
+  repeated string names = 2;
+  repeated Category categories = 3;
+  repeated string manufacturer_countries = 4;
+  repeated string tags = 5;
+}
+
+// Item информация о товаре
+message Item {
+  string uuid = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  int64 stock_quantity = 5;
+  Category category = 6;
+  Dimensions dimensions = 7;
+  Manufacturer manufacturer = 8;
+  repeated string tags = 9;
+  map<string, Value> metadata = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
+}
+
+// Category категория товара
+enum Category {
+  CATEGORY_UNSPECIFIED = 0;
+  CATEGORY_ELECTRONICS = 1;
+  CATEGORY_CLOTHING = 2;
+  CATEGORY_BOOKS = 3;
+  CATEGORY_BEAUTY = 4;
+}
+
+// Dimensions размеры товара
+message Dimensions {
+  double length = 1;
+  double width = 2;
+  double height = 3;
+  double weight = 4;
+}
+
+// Manufacturer информация о производства
+message Manufacturer {
+  string name = 1;
+  string country = 2;
+  string website = 3;
+}
+
+// Value метаинформация о товаре
+message Value {
+  oneof kind {
+    string string_value = 1;
+    int64 int_value = 2;
+    double double_value = 3;
+    bool bool_value = 4;
+  }
+}

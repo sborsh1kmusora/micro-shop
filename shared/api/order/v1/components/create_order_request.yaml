@@ -1,0 +1,19 @@
+type: object
+required:
+  - user_uuid
+  - item_uuids
+properties:
+  user_uuid:
+    type: string
+    format: uuid
+    description: Уникальный идентификатор пользователя
+    example: "550e8400-e29b-41d4-a716-446655440000"
+  item_uuids:
+    type: array
+    items:
+      type: string
+      format: uuid
+    description: Список идентификаторов товаров
+    example:
+      - "123e4567-e89b-12d3-a456-426614174000"
+      - "15df4345-b30s-79j2-9s43-988394308083"
