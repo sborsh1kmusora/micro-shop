@@ -10,10 +10,10 @@ import (
 	"syscall"
 
 	"github.com/google/uuid"
+	"github.com/sborsh1kmusora/micro-shop/payment/internal/interceptor"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-
-	"github.com/sborsh1kmusora/micro-shop/payment/internal/interceptor"
+  
 	paymentV1 "github.com/sborsh1kmusora/micro-shop/shared/pkg/proto/payment/v1"
 )
 
