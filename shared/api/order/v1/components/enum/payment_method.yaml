@@ -1,0 +1,8 @@
+type: string
+description: Способ оплаты
+enum:
+  - "unspecified"
+  - "card"
+  - "sbp"
+  - "credit_card"
+  - "investor_money"
