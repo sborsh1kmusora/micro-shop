@@ -1,21 +1,18 @@
-post:
-  summary: Создание заказа
-  operationId: CreateOrder
+parameters:
+  - $ref: "../params/order_uuid.yaml"
+
+get:
+  summary: Получить заказ
+  operationId: GetOrder
   tags:
     - Order
-  requestBody:
-    required: true
-    content:
-      application/json:
-        schema:
-          $ref: "../components/create_order_request.yaml"
   responses:
     '200':
-      description: Заказ успешно создан
+      description: Заказ успешно получен
       content:
         application/json:
           schema:
-            $ref: "../components/create_order_response.yaml"
+            $ref: "../components/get_order_response.yaml"
     '400':
       description: Bad request - validation error
       content:
@@ -23,7 +20,7 @@ post:
           schema:
             $ref: "../components/errors/bad_request_error.yaml"
     '404':
-      description: Один или несколько товаров не найдены
+      description: Заказ не найден
       content:
         application/json:
           schema:

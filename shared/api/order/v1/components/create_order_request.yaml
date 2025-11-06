@@ -5,14 +5,14 @@ required:
 properties:
   user_uuid:
     type: string
-    format: uuid
+    format: string
     description: Уникальный идентификатор пользователя
     example: "550e8400-e29b-41d4-a716-446655440000"
   item_uuids:
     type: array
     items:
       type: string
-      format: uuid
+      format: string
     description: Список идентификаторов товаров
     example:
       - "123e4567-e89b-12d3-a456-426614174000"

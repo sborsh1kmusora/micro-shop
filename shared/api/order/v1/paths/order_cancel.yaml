@@ -1,21 +1,14 @@
+parameters:
+  - $ref: "../params/order_uuid.yaml"
+
 post:
-  summary: Создание заказа
-  operationId: CreateOrder
+  summary: Отменить заказ
+  operationId: CancelOrder
   tags:
     - Order
-  requestBody:
-    required: true
-    content:
-      application/json:
-        schema:
-          $ref: "../components/create_order_request.yaml"
   responses:
-    '200':
-      description: Заказ успешно создан
-      content:
-        application/json:
-          schema:
-            $ref: "../components/create_order_response.yaml"
+    '204':
+      description: Заказ успешно отменен
     '400':
       description: Bad request - validation error
       content:
@@ -23,11 +16,17 @@ post:
           schema:
             $ref: "../components/errors/bad_request_error.yaml"
     '404':
-      description: Один или несколько товаров не найдены
+      description: Заказ не найден
       content:
         application/json:
           schema:
             $ref: "../components/errors/not_found_error.yaml"
+    '409':
+      description: Заказ уже оплачен и не может быть отменен
+      content:
+        application/json:
+          schema:
+            $ref: "../components/errors/conflict_error.yaml"
     '500':
       description: Internal server error
       content:

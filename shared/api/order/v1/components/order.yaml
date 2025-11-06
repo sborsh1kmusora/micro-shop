@@ -1,0 +1,53 @@
+type: object
+required:
+  - order_uuid
+  - user_uuid
+  - item_uuids
+  - total_price
+  - transaction_uuid
+  - payment_method
+  - status
+properties:
+  order_uuid:
+    type: string
+    format: string
+    description: Уникальный идентификатор заказа
+    example: "550e8400-e29b-41d4-a716-446655440000"
+
+  user_uuid:
+    type: string
+    format: string
+    description: Уникальный идентификатор пользователя
+    example: "550e8400-e29b-41d4-a716-446655440000"
+
+  item_uuids:
+    type: array
+    items:
+      type: string
+      format: string
+    description: Список идентификаторов товаров
+    example:
+      - "123e4567-e89b-12d3-a456-426614174000"
+      - "15df4345-b30s-79j2-9s43-988394308083"
+
+  total_price:
+    type: number
+    format: float
+    description: Общая сумма заказа
+    example: 123.45
+
+  transaction_uuid:
+    type: string
+    format: string
+    description: Уникальный идентификатор оплаты
+    example: "550e8400-e29b-41d4-a716-446655440000"
+
+  payment_method:
+    $ref: "./enum/payment_method.yaml"
+    description: Способ оплаты
+    example: "PAYMENT_METHOD_CARD"
+
+  status:
+    $ref: "./enum/order_status.yaml"
+    description: Статус заказа
+    example: "ORDER_STATUS_PAID"
