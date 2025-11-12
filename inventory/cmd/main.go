@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
@@ -8,6 +9,9 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -21,23 +25,53 @@ import (
 const grpcPort = 50051
 
 func main() {
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
+	ctx := context.Background()
+
+	err := godotenv.Load(".env")
 	if err != nil {
-		log.Printf("failed to listen: %v", err)
+		log.Printf("Error loading .env file: %v\n", err)
 		return
 	}
+
+	dbURI := os.Getenv("MONGO_URI")
+
+	mongoClient, err := mongo.Connect(ctx, options.Client().ApplyURI(dbURI))
+	if err != nil {
+		log.Printf("Error connecting to mongo db: %v\n", err)
+		return
+	}
+	defer func() {
+		err := mongoClient.Disconnect(ctx)
+		if err != nil {
+			log.Printf("failed to disconnect: %v\n", err)
+		}
+	}()
+
+	err = mongoClient.Ping(ctx, nil)
+	if err != nil {
+		log.Printf("failed to ping mongo db: %v\n", err)
+		return
+	}
+
+	db := mongoClient.Database("inventory")
 
 	s := grpc.NewServer(
 		grpc.UnaryInterceptor(interceptor.LoggerInterceptor()),
 	)
 
-	repo := inventoryRepo.NewRepository()
+	repo := inventoryRepo.NewRepository(db)
 	service := inventoryService.NewService(repo)
 	api := inventoryApi.NewApi(service)
 
 	inventoryV1.RegisterInventoryServiceServer(s, api)
 
 	reflection.Register(s)
+
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
+	if err != nil {
+		log.Printf("failed to listen: %v", err)
+		return
+	}
 
 	go func() {
 		log.Printf("starting gRPC server on port %d", grpcPort)

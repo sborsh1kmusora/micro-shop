@@ -10,14 +10,13 @@ import (
 )
 
 func (r *repo) Create(ctx context.Context, item *model.Item) (string, error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	item.UUID = uuid.NewString()
 
-	itemUUID := uuid.NewString()
+	doc := converter.ItemToRepoModel(item)
 
-	item.UUID = itemUUID
+	if _, err := r.collection.InsertOne(ctx, doc); err != nil {
+		return "", err
+	}
 
-	r.data[itemUUID] = converter.ItemToRepoModel(item)
-
-	return itemUUID, nil
+	return item.UUID, nil
 }
