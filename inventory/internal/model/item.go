@@ -4,6 +4,14 @@ import "time"
 
 type Category int32
 
+const (
+	CategoryUnspecified Category = iota
+	CategoryElectronics
+	CategoryClothing
+	CategoryBooks
+	CategoryBeauty
+)
+
 type Item struct {
 	UUID          string
 	Name          string

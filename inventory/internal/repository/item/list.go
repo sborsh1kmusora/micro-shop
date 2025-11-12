@@ -2,6 +2,9 @@ package item
 
 import (
 	"context"
+	"log"
+
+	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/sborsh1kmusora/micro-shop/inventory/internal/model"
 	"github.com/sborsh1kmusora/micro-shop/inventory/internal/repository/converter"
@@ -9,12 +12,20 @@ import (
 )
 
 func (r *repo) List(ctx context.Context) ([]*model.Item, error) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
+	cursor, err := r.collection.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		err := cursor.Close(ctx)
+		if err != nil {
+			log.Printf("failed to close cursor: %v\n", err)
+		}
+	}()
 
-	items := make([]*repoModel.Item, 0, len(r.data))
-	for _, item := range r.data {
-		items = append(items, item)
+	var items []*repoModel.Item
+	if err := cursor.All(ctx, &items); err != nil {
+		return nil, err
 	}
 
 	return converter.ItemListToModel(items), nil

@@ -1,0 +1,28 @@
+with-expecter: true
+dir: "{{.InterfaceDir}}/mocks"
+filename: "mock_{{.InterfaceNameSnake}}.go"
+outpkg: "mocks"
+mockname: "{{.InterfaceName}}"
+resolve-type-alias: False
+issue-845-fix: True
+
+packages:
+  github.com/sborsh1kmusora/micro-shop/inventory/internal/service:
+    config:
+      include-regex: ".*Service"
+
+  github.com/sborsh1kmusora/micro-shop/inventory/internal/repository:
+    config:
+      include-regex: ".*Repository"
+
+  github.com/sborsh1kmusora/micro-shop/order/internal/service:
+    config:
+      include-regex: ".*Service"
+
+  github.com/sborsh1kmusora/micro-shop/order/internal/repository:
+    config:
+      include-regex: ".*Repository"
+
+  github.com/sborsh1kmusora/micro-shop/payment/internal/service:
+    config:
+      include-regex: ".*Service"

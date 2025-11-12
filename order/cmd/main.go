@@ -59,7 +59,7 @@ func main() {
 	inventory := inventoryClient.NewClient(invGrpc)
 
 	repo := orderRepo.NewOrderRepository()
-	service := orderService.NewOrderService(repo, inventory, payment)
+	service := orderService.NewService(repo, inventory, payment)
 
 	api := orderApi.NewApi(service)
 

@@ -15,7 +15,7 @@ type service struct {
 	paymentClient   grpc.PaymentClient
 }
 
-func NewOrderService(
+func NewService(
 	orderRepo repository.OrderRepository,
 	inventoryClient grpc.InventoryClient,
 	paymentClient grpc.PaymentClient,
