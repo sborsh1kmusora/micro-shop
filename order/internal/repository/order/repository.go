@@ -1,21 +1,34 @@
 package order
 
 import (
-	"sync"
+	"github.com/Masterminds/squirrel"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	def "github.com/sborsh1kmusora/micro-shop/order/internal/repository"
-	repoModel "github.com/sborsh1kmusora/micro-shop/order/internal/repository/model"
+)
+
+const (
+	tableName = "orders"
+
+	uuidColumn            = "uuid"
+	userUUIDColumn        = "user_uuid"
+	itemsUUIDsColumn      = "items_uuids"
+	statusColumn          = "status"
+	paymentMethodColumn   = "payment_method"
+	transactionUUIDColumn = "transaction_uuid"
+	totalPriceColumn      = "total_price"
 )
 
 var _ def.OrderRepository = (*repo)(nil)
 
 type repo struct {
-	mu   sync.RWMutex
-	data map[string]*repoModel.Order
+	pool *pgxpool.Pool
+	sb   squirrel.StatementBuilderType
 }
 
-func NewOrderRepository() *repo {
+func NewOrderRepository(pool *pgxpool.Pool) *repo {
 	return &repo{
-		data: make(map[string]*repoModel.Order),
+		pool: pool,
+		sb:   squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar),
 	}
 }

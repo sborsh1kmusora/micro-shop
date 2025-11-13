@@ -3,28 +3,38 @@ package order
 import (
 	"context"
 
+	"github.com/Masterminds/squirrel"
+
 	"github.com/sborsh1kmusora/micro-shop/order/internal/model"
 )
 
 func (r *repo) Update(ctx context.Context, uuid string, orderUpdate *model.OrderUpdate) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	order, ok := r.data[uuid]
-	if !ok {
-		return model.ErrOrderNotFound
-	}
+	builder := r.sb.Update(tableName)
 
 	if orderUpdate.TransactionUUID != nil {
-		order.TransactionUUID = *orderUpdate.TransactionUUID
+		builder = builder.Set(transactionUUIDColumn, *orderUpdate.TransactionUUID)
 	}
-
 	if orderUpdate.PaymentMethod != nil {
-		order.PaymentMethod = *orderUpdate.PaymentMethod
+		builder = builder.Set(paymentMethodColumn, *orderUpdate.PaymentMethod)
+	}
+	if orderUpdate.Status != nil {
+		builder = builder.Set(statusColumn, *orderUpdate.Status)
 	}
 
-	if orderUpdate.Status != nil {
-		order.Status = *orderUpdate.Status
+	builder = builder.Where(squirrel.Eq{uuidColumn: uuid})
+
+	query, args, err := builder.ToSql()
+	if err != nil {
+		return err
+	}
+
+	cmdTag, execErr := r.pool.Exec(ctx, query, args...)
+	if execErr != nil {
+		return execErr
+	}
+
+	if cmdTag.RowsAffected() == 0 {
+		return model.ErrOrderNotFound
 	}
 
 	return nil

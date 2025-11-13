@@ -20,6 +20,7 @@
 # env file
 deploy/compose/inventory/.env
 inventory/.env
+order/.env
 /.idea
 /.vscode
 /.cursor

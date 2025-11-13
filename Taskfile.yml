@@ -12,6 +12,7 @@ vars:
   PROTOC_GEN_GO_VERSION: 'v1.36.6'
   PROTOC_GEN_GO_GRPC_VERSION: 'v1.5.1'
   MOCKERY_VERSION: 'v2.53.3'
+  GOOSE_VERSION: 'v3.25.0'
 
   BIN_DIR: '{{.ROOT_DIR}}/bin'
   GOLANGCI_LINT: '{{.BIN_DIR}}/golangci-lint'
@@ -20,6 +21,7 @@ vars:
   OGEN: '{{.BIN_DIR}}/ogen'
   YQ: '{{.BIN_DIR}}/yq'
   BUF: '{{.BIN_DIR}}/buf'
+  GOOSE: '{{.BIN_DIR}}/goose'
   PROTOC_GEN_GO: '{{.BIN_DIR}}/protoc-gen-go'
   PROTOC_GEN_GO_GRPC: '{{.BIN_DIR}}/protoc-gen-go-grpc'
   MOCKERY: "{{.BIN_DIR}}/mockery"
@@ -322,3 +324,12 @@ tasks:
       - task down-core
       - task down-inventory
       - task down-order
+
+  goose:install:
+    desc: "Скачивает goose в папку bin"
+    cmds:
+      - |
+        [ -f {{.GOOSE}} ] || {
+          mkdir -p {{.BIN_DIR}}
+          GOBIN={{.BIN_DIR}} go install github.com/pressly/goose/v3/cmd/goose@{{.GOOSE_VERSION}}
+        }
