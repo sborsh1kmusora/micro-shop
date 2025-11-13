@@ -8,6 +8,7 @@
 <img src="arch.jpg" alt="Логотип" width="600">
 
 
+
 ### Order-Service (HTTP + OpenAPI)
 
 Сервис управления заказами.
