@@ -13,6 +13,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
+	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -20,6 +23,7 @@ import (
 	inventoryClient "github.com/sborsh1kmusora/micro-shop/order/internal/client/grpc/inventory/v1"
 	paymentClient "github.com/sborsh1kmusora/micro-shop/order/internal/client/grpc/payment/v1"
 	customMiddleware "github.com/sborsh1kmusora/micro-shop/order/internal/middleware"
+	"github.com/sborsh1kmusora/micro-shop/order/internal/migrator"
 	orderRepo "github.com/sborsh1kmusora/micro-shop/order/internal/repository/order"
 	orderService "github.com/sborsh1kmusora/micro-shop/order/internal/service/order"
 	orderV1 "github.com/sborsh1kmusora/micro-shop/shared/pkg/openapi/order/v1"
@@ -36,12 +40,44 @@ const (
 )
 
 func main() {
+	ctx := context.Background()
+
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Printf("failed to load .env file: %v\n", err)
+		return
+	}
+
+	dbURI := os.Getenv("DB_URI")
+
+	pool, err := pgxpool.New(ctx, dbURI)
+	if err != nil {
+		log.Printf("failed to connect to database: %v\n", err)
+		return
+	}
+	defer pool.Close()
+
+	if err = pool.Ping(ctx); err != nil {
+		log.Printf("failed to ping database: %v\n", err)
+		return
+	}
+
+	migrationsDir := os.Getenv("MIGRATIONS_DIR")
+	migratorRunner := migrator.NewMigrator(stdlib.OpenDB(*pool.Config().ConnConfig), migrationsDir)
+
+	err = migratorRunner.Up()
+	if err != nil {
+		log.Printf("database migration error: %v\n", err)
+		return
+	}
+
 	invConn, err := grpc.NewClient(
 		inventoryServiceAddr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
-		log.Fatalf("failed to create gRPC connection to inventory service: %v", err)
+		log.Printf("failed to create gRPC connection to inventory service: %v", err)
+		return
 	}
 
 	paymentConn, err := grpc.NewClient(
@@ -49,7 +85,8 @@ func main() {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
-		log.Fatalf("failed to create gRPC connection to payment service: %v", err)
+		log.Printf("failed to create gRPC connection to payment service: %v", err)
+		return
 	}
 
 	invGrpc := inventoryV1.NewInventoryServiceClient(invConn)
@@ -58,14 +95,15 @@ func main() {
 	payment := paymentClient.NewClient(payGrpc)
 	inventory := inventoryClient.NewClient(invGrpc)
 
-	repo := orderRepo.NewOrderRepository()
+	repo := orderRepo.NewOrderRepository(pool)
 	service := orderService.NewService(repo, inventory, payment)
 
 	api := orderApi.NewApi(service)
 
 	orderServer, err := orderV1.NewServer(api)
 	if err != nil {
-		log.Fatalf("Error creating order server: %v", err)
+		log.Printf("Error creating order server: %v", err)
+		return
 	}
 
 	r := chi.NewRouter()

@@ -6,18 +6,25 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/sborsh1kmusora/micro-shop/order/internal/model"
-	"github.com/sborsh1kmusora/micro-shop/order/internal/repository/converter"
 )
 
 func (r *repo) Create(ctx context.Context, order *model.Order) (string, error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
 	orderUUID := uuid.NewString()
-
 	order.UUID = orderUUID
 
-	r.data[orderUUID] = converter.OrderToRepoModel(order)
+	query, args, err := r.sb.
+		Insert(tableName).
+		Columns(uuidColumn, userUUIDColumn, itemsUUIDsColumn, statusColumn, paymentMethodColumn, transactionUUIDColumn, totalPriceColumn).
+		Values(order.UUID, order.UserUUID, order.ItemUuids, order.Status, order.PaymentMethod, order.TransactionUUID, order.TotalPrice).
+		ToSql()
+	if err != nil {
+		return "", err
+	}
+
+	_, execErr := r.pool.Exec(ctx, query, args...)
+	if execErr != nil {
+		return "", execErr
+	}
 
 	return orderUUID, nil
 }

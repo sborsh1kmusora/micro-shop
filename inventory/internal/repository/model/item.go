@@ -35,7 +35,7 @@ type Manufacturer struct {
 }
 
 type Item struct {
-	UUID          string            `bson:"uuid"`
+	UUID          string            `bson:"_id"`
 	Name          string            `bson:"name"`
 	Description   string            `bson:"description"`
 	Price         float32           `bson:"price"`
@@ -46,5 +46,5 @@ type Item struct {
 	Tags          []string          `bson:"tags"`
 	Metadata      map[string]*Value `bson:"metadata"`
 	CreatedAt     time.Time         `bson:"created_at"`
-	UpdatedAt     *time.Time        `bson:"updated_at"`
+	UpdatedAt     *time.Time        `bson:"updated_at,omitempty"`
 }
